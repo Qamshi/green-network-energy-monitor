@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GREEN Network Energy Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;800&display=swap');
+
+  :root {
+    --bg:        #050a0f;
+    --panel:     #0a1520;
+    --border:    #0d2a3d;
+    --accent:    #00e5ff;
+    --accent2:   #00ff9d;
+    --accent3:   #ff6b35;
+    --accent4:   #a855f7;
+    --text:      #c8dde8;
+    --dim:       #4a6070;
+    --glow:      0 0 20px rgba(0,229,255,0.3);
+    --glow2:     0 0 20px rgba(0,255,157,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-area h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-shadow: var(--glow);
+    text-transform: uppercase;
+  }
+
+  .logo-area p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--dim);
+    margin-top: 4px;
+    letter-spacing: 0.15em;
+  }
+
+  .status-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 10px var(--accent2);
+    animation: pulse 2s infinite;
+  }
+
+  .status-dot.offline { background: #ff4444; box-shadow: 0 0 10px #ff4444; animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--dim);
+  }
+
+  .refresh-btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .refresh-btn:hover {
+    background: rgba(0,229,255,0.1);
+    box-shadow: var(--glow);
+  }
+
+  /* Timestamp bar */
+  .timestamp-bar {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--dim);
+    margin-bottom: 28px;
+    letter-spacing: 0.08em;
+  }
+
+  .timestamp-bar span { color: var(--accent); }
+
+  /* Source cards grid */
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 700px) {
+    .sources-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .card.program-a::before { background: var(--accent); box-shadow: var(--glow); }
+  .card.program-b::before { background: var(--accent2); box-shadow: var(--glow2); }
+  .card.program-c::before { background: var(--accent4); box-shadow: 0 0 20px rgba(168,85,247,0.4); }
+  .card.sonoff::before    { background: var(--accent3); box-shadow: 0 0 20px rgba(255,107,53,0.4); }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .card-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .card-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .card.program-a .card-name { color: var(--accent); }
+  .card.program-b .card-name { color: var(--accent2); }
+  .card.program-c .card-name { color: var(--accent4); }
+  .card.sonoff    .card-name { color: var(--accent3); }
+
+  .port-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* Metrics */
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .metric {
+    background: rgba(0,0,0,0.3);
+    padding: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .metric-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .metric-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  .metric-unit {
+    font-size: 0.65rem;
+    color: var(--dim);
+    margin-left: 3px;
+  }
+
+  .card.program-a .metric-value { color: var(--accent); }
+  .card.program-b .metric-value { color: var(--accent2); }
+  .card.program-c .metric-value { color: var(--accent4); }
+  .card.sonoff    .metric-value { color: var(--accent3); }
+
+  /* Utilization bar */
+  .util-bar-wrap {
+    margin-top: 14px;
+  }
+
+  .util-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--dim);
+    margin-bottom: 6px;
+    letter-spacing: 0.1em;
+  }
+
+  .util-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .util-bar-fill {
+    height: 100%;
+    background: var(--accent4);
+    box-shadow: 0 0 10px rgba(168,85,247,0.5);
+    transition: width 1s ease;
+  }
+
+  /* Summary bar */
+  .summary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .summary::before {
+    content: 'AGGREGATED TOTALS';
+    position: absolute;
+    top: 8px; left: 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+  }
+
+  .summary-metric {
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  .summary-metric .metric-label {
+    font-size: 0.58rem;
+  }
+
+  .summary-metric .metric-value {
+    font-size: 1.5rem;
+    color: #fff;
+  }
+
+  /* Loading & error */
+  .loading {
+    text-align: center;
+    padding: 80px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--dim);
+    letter-spacing: 0.15em;
+  }
+
+  .loading-spinner {
+    width: 40px; height: 40px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    background: rgba(255,68,68,0.1);
+    border: 1px solid rgba(255,68,68,0.3);
+    color: #ff8888;
+    padding: 16px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 20px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .card:nth-child(4) { animation-delay: 0.2s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-area">
+      <h1>⚡ GREEN Energy Monitor</h1>
+      <p>IETF GREEN WORKING GROUP · AGGREGATED NETWORK ENERGY VIEW</p>
+    </div>
+    <div class="status-area">
+      <div class="status-dot" id="statusDot"></div>
+      <span class="status-text" id="statusText">CONNECTING...</span>
+      <button class="refresh-btn" onclick="loadData()">↻ REFRESH</button>
+    </div>
+  </header>
+
+  <div class="timestamp-bar" id="timestampBar">
+    LAST UPDATED: <span>—</span>
+  </div>
+
+  <div id="errorBox" style="display:none" class="error-msg"></div>
+  <div id="loadingBox" class="loading">
+    <div class="loading-spinner"></div>
+    FETCHING FROM AGGREGATOR...
+  </div>
+
+  <div id="dashboard" style="display:none">
+    <div class="sources-grid">
+
+      <!-- Program A -->
+      <div class="card program-a">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Source 1 · Port 8881</div>
+            <div class="card-name">POWER & ENERGY</div>
+          </div>
+          <div class="port-badge">draft-bcmj-green-power-and-energy-yang</div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Instant Power</div>
+            <div class="metric-value" id="a-power">—<span class="metric-unit">mW</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Nameplate</div>
+            <div class="metric-value" id="a-nameplate">—<span class="metric-unit">mW</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Energy Total</div>
+            <div class="metric-value" id="a-energy">—<span class="metric-unit">mWh</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Power Factor</div>
+            <div class="metric-value" id="a-pf">—<span class="metric-unit">%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Program B -->
+      <div class="card program-b">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Source 2 · Port 8882</div>
+            <div class="card-name">SMART PDU</div>
+          </div>
+          <div class="port-badge">draft-ahc-green-smartpdu-yang</div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Total Load</div>
+            <div class="metric-value" id="b-power">—<span class="metric-unit">W</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Active Outlets</div>
+            <div class="metric-value" id="b-outlets">—</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Temperature</div>
+            <div class="metric-value" id="b-temp">—<span class="metric-unit">°C</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Humidity</div>
+            <div class="metric-value" id="b-humidity">—<span class="metric-unit">%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Program C -->
+      <div class="card program-c">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Source 3 · Port 8883</div>
+            <div class="card-name">ISAC UTILIZATION</div>
+          </div>
+          <div class="port-badge">draft-jadoon-green-isac-utilization</div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Overall Score</div>
+            <div class="metric-value" id="c-score">—<span class="metric-unit">/100</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Compute Impact</div>
+            <div class="metric-value" id="c-compute">—<span class="metric-unit">/100</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Energy Impact</div>
+            <div class="metric-value" id="c-energy">—<span class="metric-unit">/100</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Confidence</div>
+            <div class="metric-value" id="c-conf">—<span class="metric-unit">%</span></div>
+          </div>
+        </div>
+        <div class="util-bar-wrap">
+          <div class="util-bar-label">
+            <span>UTILIZATION LOAD</span>
+            <span id="c-score-pct">—%</span>
+          </div>
+          <div class="util-bar-track">
+            <div class="util-bar-fill" id="c-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sonoff -->
+      <div class="card sonoff">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Source 4 · Port 8080</div>
+            <div class="card-name">SONOFF DEVICE</div>
+          </div>
+          <div class="port-badge">REAL DEVICE · LAST SEMESTER</div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Active Power</div>
+            <div class="metric-value" id="s-power">—<span class="metric-unit">W</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Voltage</div>
+            <div class="metric-value" id="s-voltage">—<span class="metric-unit">V</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Current</div>
+            <div class="metric-value" id="s-current">—<span class="metric-unit">A</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Energy Total</div>
+            <div class="metric-value" id="s-energy">—<span class="metric-unit">kWh</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end sources-grid -->
+
+    <!-- Summary -->
+    <div class="summary">
+      <div class="summary-metric">
+        <div class="metric-label">Total Sources</div>
+        <div class="metric-value" id="sum-sources">4</div>
+      </div>
+      <div class="summary-metric">
+        <div class="metric-label">AP Power (mW)</div>
+        <div class="metric-value" id="sum-ap">—</div>
+      </div>
+      <div class="summary-metric">
+        <div class="metric-label">PDU Total Load</div>
+        <div class="metric-value" id="sum-pdu">—<span class="metric-unit" style="font-size:0.8rem"> W</span></div>
+      </div>
+      <div class="summary-metric">
+        <div class="metric-label">Network Util.</div>
+        <div class="metric-value" id="sum-util">—<span class="metric-unit" style="font-size:0.8rem">/100</span></div>
+      </div>
+    </div>
+
+  </div><!-- end dashboard -->
+</div><!-- end container -->
+
+<script>
+  const API = 'http://localhost:8884/restconf/data/aggregator:aggregated-energy';
+
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.childNodes[0].nodeValue = val;
+  }
+
+  async function loadData() {
+    document.getElementById('loadingBox').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('errorBox').style.display = 'none';
+
+    try {
+      const res = await fetch(API);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = await res.json();
+
+      // Timestamp
+      document.getElementById('timestampBar').innerHTML =
+        `LAST UPDATED: <span>${d.timestamp || '—'}</span>`;
+
+      // Program A
+      const pe = d['power-energy'] || {};
+      set('a-power',     pe['instantaneous-power'] ?? '—');
+      set('a-nameplate', pe['nameplate-power'] ?? '—');
+      set('a-energy',    pe['total-energy-consumed'] ?? '—');
+      set('a-pf',        pe['power-factor'] ?? '—');
+
+      // Program B
+      const pdu = d['smart-pdu'] || {};
+      set('b-power',   (pdu['total-pdu-power'] ?? 0).toFixed(2));
+      set('b-outlets', pdu['active-outlets'] ?? '—');
+      set('b-temp',    pdu['temperature'] ?? '—');
+      set('b-humidity',pdu['humidity'] ?? '—');
+
+      // Program C
+      const isac = d['isac-utilization'] || {};
+      const score = isac['overall-utilization-score'] ?? 0;
+      set('c-score',   score);
+      set('c-compute', isac['compute-impact-score'] ?? '—');
+      set('c-energy',  isac['energy-impact-score'] ?? '—');
+      set('c-conf',    isac['confidence-level'] ?? '—');
+      set('c-score-pct', score + '%');
+      document.getElementById('c-bar').style.width = score + '%';
+
+      // Sonoff
+      const s = d['sonoff-device'] || {};
+      set('s-power',   s['power-active'] ?? '—');
+      set('s-voltage', s['voltage'] ?? '—');
+      set('s-current', s['current'] ?? '—');
+      set('s-energy',  s['energy-total'] ?? '—');
+
+      // Summary
+      set('sum-sources', d['total-sources'] ?? 4);
+      set('sum-ap',      pe['instantaneous-power'] ?? '—');
+      set('sum-pdu',     (pdu['total-pdu-power'] ?? 0).toFixed(1));
+      set('sum-util',    score);
+
+      // Status
+      document.getElementById('statusDot').className = 'status-dot';
+      document.getElementById('statusText').textContent = 'LIVE · ALL SOURCES CONNECTED';
+
+      document.getElementById('loadingBox').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+
+    } catch (e) {
+      document.getElementById('statusDot').className = 'status-dot offline';
+      document.getElementById('statusText').textContent = 'OFFLINE';
+      document.getElementById('errorBox').style.display = 'block';
+      document.getElementById('errorBox').textContent =
+        '⚠ Could not reach aggregator at ' + API + '\n\nMake sure all 5 servers are running. Error: ' + e.message;
+      document.getElementById('loadingBox').style.display = 'none';
+    }
+  }
+
+  // Load on start, auto-refresh every 30 seconds
+  loadData();
+  setInterval(loadData, 30000);
+</script>
+</body>
+</html>

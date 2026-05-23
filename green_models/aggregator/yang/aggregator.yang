@@ -1,0 +1,157 @@
+module aggregator {
+  namespace "urn:ietf:params:xml:ns:yang:aggregator";
+  prefix "agg";
+
+  description
+    "Aggregated energy data from multiple IETF GREEN YANG model sources.
+     Combines Power & Energy (draft-bcmj-green-power-and-energy-yang-04),
+     SmartPDU (draft-ahc-green-smartpdu-yang-00),
+     ISAC Utilization (draft-jadoon-green-isac-utilization-03),
+     and real Sonoff device data into a single unified view.";
+
+  revision "2026-05-13" {
+    description "Initial aggregator model.";
+  }
+
+  container aggregated-energy {
+    description "Unified energy view aggregated from all sources.";
+
+    leaf timestamp {
+      type string;
+      description "Time when aggregation was performed.";
+    }
+
+    leaf total-sources {
+      type uint8;
+      description "Number of data sources aggregated.";
+    }
+
+    // ── Source 1: Program A — Power & Energy ──────────────────────────────
+    container power-energy {
+      description "Data from Program A — ietf-power-and-energy YANG model.";
+
+      leaf object-id {
+        type string;
+      }
+      leaf instantaneous-power {
+        type uint64;
+        description "Instantaneous power in milliwatts.";
+      }
+      leaf nameplate-power {
+        type uint64;
+        description "Nameplate power in milliwatts.";
+      }
+      leaf total-energy-consumed {
+        type uint64;
+        description "Total energy consumed in milliwatt-hours.";
+      }
+      leaf power-factor {
+        type uint8;
+        description "Power factor percentage.";
+      }
+      leaf unit-multiplier {
+        type string;
+      }
+    }
+
+    // ── Source 2: Program B — SmartPDU ────────────────────────────────────
+    container smart-pdu {
+      description "Data from Program B — pdu-common YANG model.";
+
+      leaf manufacturer {
+        type string;
+      }
+      leaf model {
+        type string;
+      }
+      leaf temperature {
+        type decimal64 {
+          fraction-digits 2;
+        }
+        description "PDU temperature in Celsius.";
+      }
+      leaf humidity {
+        type decimal64 {
+          fraction-digits 2;
+        }
+        description "PDU humidity in percent.";
+      }
+      leaf total-pdu-power {
+        type decimal64 {
+          fraction-digits 2;
+        }
+        description "Sum of power across all active outlets in Watts.";
+      }
+      leaf active-outlets {
+        type uint8;
+        description "Number of outlets currently on.";
+      }
+    }
+
+    // ── Source 3: Program C — ISAC Utilization ────────────────────────────
+    container isac-utilization {
+      description "Data from Program C — ietf-isac-utilization YANG model.";
+
+      leaf overall-utilization-score {
+        type uint8;
+        description "Overall ISAC utilization score 0-100.";
+      }
+      leaf compute-impact-score {
+        type uint8;
+      }
+      leaf energy-impact-score {
+        type uint8;
+      }
+      leaf confidence-level {
+        type uint8;
+      }
+      leaf aggregation-window {
+        type uint64;
+        description "Aggregation window in milliseconds.";
+      }
+    }
+
+    // ── Source 4: Sonoff Real Device ──────────────────────────────────────
+    container sonoff-device {
+      description "Real energy data from Sonoff physical device (last semester).";
+
+      leaf device-id {
+        type string;
+      }
+      leaf voltage {
+        type decimal64 {
+          fraction-digits 2;
+        }
+        description "Measured voltage in Volts.";
+      }
+      leaf current {
+        type decimal64 {
+          fraction-digits 3;
+        }
+        description "Measured current in Amperes.";
+      }
+      leaf power-active {
+        type decimal64 {
+          fraction-digits 2;
+        }
+        description "Active power in Watts.";
+      }
+      leaf power-factor {
+        type decimal64 {
+          fraction-digits 2;
+        }
+        description "Power factor ratio.";
+      }
+      leaf energy-total {
+        type decimal64 {
+          fraction-digits 3;
+        }
+        description "Total energy consumed in kWh.";
+      }
+      leaf last-updated {
+        type string;
+        description "Timestamp of last Sonoff reading.";
+      }
+    }
+  }
+}

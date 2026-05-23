@@ -1,0 +1,17 @@
+# Go build files
+*.exe
+*.sum
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Generated data (auto-created by AI)
+green_models/program_a/data.json
+green_models/program_b/data.json
+green_models/program_c/data.json
+green_models/history.json
+
+# API keys
+API KEY.txt
+config.py

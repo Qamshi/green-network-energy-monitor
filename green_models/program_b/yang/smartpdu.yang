@@ -1,0 +1,179 @@
+// pdu-common YANG module
+// Simplified from: draft-ahc-green-smartpdu-yang-00
+// Used by Program B FreeCONF RESTCONF server
+
+module smartpdu {
+    namespace "urn:example:pdu-common";
+    prefix "pdu";
+    yang-version 1.1;
+
+    description
+        "Simplified YANG model for Smart PDU monitoring.
+         Based on draft-ahc-green-smartpdu-yang-00
+         from the IETF GREEN Working Group.";
+
+    revision 2026-03-15 {
+        description "Initial implementation for Green Models project";
+    }
+
+    container pdu-system {
+        description "Top-level SmartPDU system information.";
+        config false;
+
+        leaf manufacturer {
+            type string;
+            description "PDU manufacturer name.";
+        }
+        leaf model {
+            type string;
+            description "PDU model identifier.";
+        }
+        leaf serial-number {
+            type string;
+            description "PDU serial number.";
+        }
+        leaf firmware-version {
+            type string;
+            description "Current firmware version.";
+        }
+        leaf uptime {
+            type uint64;
+            units "seconds";
+            description "Seconds since last reboot.";
+        }
+        leaf temperature {
+            type decimal64 {
+                fraction-digits 2;
+            }
+            units "Celsius";
+            description "Ambient temperature at PDU location.";
+        }
+        leaf humidity {
+            type decimal64 {
+                fraction-digits 2;
+            }
+            units "percent";
+            description "Relative humidity at PDU location.";
+        }
+
+        container input-lines {
+            description "AC power input lines feeding this PDU.";
+
+            list line {
+                key "id";
+                description "One AC input line.";
+
+                leaf id {
+                    type string;
+                    description "Line identifier e.g. L1.";
+                }
+                leaf voltage {
+                    type decimal64 { fraction-digits 2; }
+                    units "Volts";
+                }
+                leaf current {
+                    type decimal64 { fraction-digits 3; }
+                    units "Amperes";
+                }
+                leaf frequency {
+                    type decimal64 { fraction-digits 1; }
+                    units "Hz";
+                }
+                leaf power {
+                    type decimal64 { fraction-digits 2; }
+                    units "Watts";
+                }
+                leaf energy {
+                    type decimal64 { fraction-digits 3; }
+                    units "kWh";
+                }
+                leaf status {
+                    type enumeration {
+                        enum ok;
+                        enum warning;
+                        enum fault;
+                    }
+                }
+            }
+        }
+
+        container outlets {
+            description "Individual power outlets on this PDU.";
+
+            list outlet {
+                key "id";
+                description "One power outlet.";
+
+                leaf id {
+                    type string;
+                    description "Outlet identifier e.g. outlet-1.";
+                }
+                leaf label {
+                    type string;
+                    description "Human-readable label e.g. Access-Point.";
+                }
+                leaf voltage {
+                    type decimal64 { fraction-digits 2; }
+                    units "Volts";
+                }
+                leaf current {
+                    type decimal64 { fraction-digits 3; }
+                    units "Amperes";
+                }
+                leaf power {
+                    type decimal64 { fraction-digits 2; }
+                    units "Watts";
+                }
+                leaf energy {
+                    type decimal64 { fraction-digits 3; }
+                    units "kWh";
+                }
+                leaf power-factor {
+                    type decimal64 { fraction-digits 2; }
+                    description "Power factor (0.00 to 1.00).";
+                }
+                leaf status {
+                    type enumeration {
+                        enum on;
+                        enum off;
+                        enum error;
+                        enum unknown;
+                    }
+                }
+            }
+        }
+
+        container sensors {
+            description "Environmental sensors attached to PDU.";
+
+            list sensor {
+                key "id";
+                description "One sensor reading.";
+
+                leaf id {
+                    type string;
+                }
+                leaf type {
+                    type enumeration {
+                        enum temperature;
+                        enum humidity;
+                        enum airflow;
+                    }
+                }
+                leaf value {
+                    type decimal64 { fraction-digits 2; }
+                }
+                leaf unit {
+                    type string;
+                }
+                leaf status {
+                    type enumeration {
+                        enum ok;
+                        enum warning;
+                        enum fault;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,102 @@
+// ietf-isac-utilization YANG module
+// Simplified from: draft-jadoon-green-isac-utilization-03
+// Used by Program C FreeCONF RESTCONF server
+
+module isac-utilization {
+    namespace "urn:ietf:params:xml:ns:yang:ietf-isac-utilization";
+    prefix "isac";
+    yang-version 1.1;
+
+    description
+        "Simplified YANG model for ISAC Utilization Score reporting.
+         Based on draft-jadoon-green-isac-utilization-03
+         from the IETF GREEN Working Group.
+         
+         ISAC = Integrated Sensing and Communication. Reports a 
+         normalized (0-100) utilization score for devices that 
+         perform both WiFi communication and sensing tasks.";
+
+    revision 2026-03-15 {
+        description "Initial implementation for Green Models project";
+    }
+
+    container isac-utilization {
+        description "ISAC utilization reporting at device scope.";
+        config false;
+
+        leaf overall-utilization-score {
+            type uint8 {
+                range "0..100";
+            }
+            description
+                "Overall ISAC Utilization Score (0-100).
+                 Higher value means more resources consumed by sensing.";
+        }
+
+        leaf timestamp {
+            type string;
+            description "End time of the measurement aggregation window (ISO 8601).";
+        }
+
+        leaf aggregation-window {
+            type uint64;
+            units "milliseconds";
+            description "Length of the measurement window in milliseconds.";
+        }
+
+        container component-scores {
+            description "Optional breakdown of which resource drives the score.";
+
+            leaf compute-impact-score {
+                type uint8 { range "0..100"; }
+                description "CPU/compute resource impact (0-100).";
+            }
+            leaf memory-impact-score {
+                type uint8 { range "0..100"; }
+                description "Memory resource impact (0-100).";
+            }
+            leaf energy-consumption-impact-score {
+                type uint8 { range "0..100"; }
+                description "Energy consumption impact (0-100). Not raw watts — a normalized score.";
+            }
+            leaf storage-impact-score {
+                type uint8 { range "0..100"; }
+                description "Storage resource impact (0-100).";
+            }
+            leaf latency-impact-score {
+                type uint8 { range "0..100"; }
+                description "Latency constraint impact (0-100).";
+            }
+        }
+
+        container metadata {
+            description "Information about how the score was derived.";
+
+            leaf score-method {
+                type string;
+                description "Identifier for scoring method used.";
+            }
+            leaf score-method-version {
+                type string;
+                description "Version of the scoring method.";
+            }
+            leaf score-provenance {
+                type enumeration {
+                    enum measured;
+                    enum estimated;
+                    enum aggregated;
+                }
+                description "How the score was produced.";
+            }
+            leaf sample-count {
+                type uint32;
+                description "Number of samples used in the aggregation window.";
+            }
+            leaf confidence-level {
+                type uint8 { range "0..100"; }
+                units "percent";
+                description "Confidence in the reported score (0-100).";
+            }
+        }
+    }
+}

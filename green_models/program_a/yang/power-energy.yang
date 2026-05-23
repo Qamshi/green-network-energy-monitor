@@ -1,0 +1,101 @@
+// ietf-power-and-energy YANG module
+// Simplified from: draft-bcmj-green-power-and-energy-yang-04
+// Used by Program A FreeCONF RESTCONF server
+
+module power-energy {
+    namespace "urn:ietf:params:xml:ns:yang:ietf-power-and-energy";
+    prefix "pe";
+    yang-version 1.1;
+
+    description
+        "Simplified YANG model for Power and Energy monitoring.
+         Based on draft-bcmj-green-power-and-energy-yang-04
+         from the IETF GREEN Working Group.";
+
+    revision 2026-03-15 {
+        description "Initial implementation for Green Models project";
+    }
+
+    container energy-objects {
+        description "Container holding all energy monitoring entries.";
+        config false;
+
+        list energy-entry {
+            key "object-id";
+            description "One entry per monitored energy object (device/component).";
+
+            leaf object-id {
+                type string;
+                description "Unique identifier for this energy object.";
+            }
+
+            container power {
+                description "Real-time power measurements.";
+
+                leaf instantaneous-power {
+                    type int32;
+                    units "milliwatts";
+                    description "Current power consumption in milliwatts.";
+                }
+
+                leaf nameplate-power {
+                    type uint32;
+                    units "milliwatts";
+                    description "Maximum rated power from manufacturer spec.";
+                }
+
+                leaf unit-multiplier {
+                    type string;
+                    description "Scale of measurement e.g. multiplier-milli";
+                }
+
+                leaf data-source-accuracy {
+                    type string;
+                    description "Accuracy class e.g. accuracy-measured-gold";
+                }
+
+                leaf power-factor {
+                    type uint8;
+                    units "percent";
+                    description "Power factor as percentage (0-100).";
+                }
+
+                leaf measurement-local {
+                    type boolean;
+                    description "True if measured locally on the device.";
+                }
+            }
+
+            container energy {
+                description "Cumulative energy measurements.";
+
+                leaf total-energy-consumed {
+                    type uint64;
+                    units "milliwatt-hours";
+                    description "Total cumulative energy consumed since last reset.";
+                }
+
+                leaf total-energy-delivered {
+                    type uint64;
+                    units "milliwatt-hours";
+                    description "Total cumulative energy delivered (0 for AP).";
+                }
+
+                leaf unit-multiplier {
+                    type string;
+                    description "Scale of measurement.";
+                }
+
+                leaf data-source-accuracy {
+                    type string;
+                    description "Accuracy class.";
+                }
+
+                leaf measurement-local {
+                    type boolean;
+                    description "True if measured locally.";
+                }
+            }
+        }
+    }
+}
