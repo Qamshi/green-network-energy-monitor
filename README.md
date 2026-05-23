@@ -1,5 +1,6 @@
 # GREEN Network Energy Monitor
 ## IETF GREEN Working Group — Multi-Source Energy Data Aggregation
+![Dashboard](dashboard-screenshot.png)
 
 ---
 
