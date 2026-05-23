@@ -1,0 +1,1 @@
+{ "subject": "/", "links" : [ { "rel" : "restconf", "href" : "/restconf" } ] }

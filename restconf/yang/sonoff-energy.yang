@@ -1,0 +1,75 @@
+module sonoff-energy {
+  yang-version 1.1;
+  namespace "http://example.com/sonoff-energy";
+  prefix se;
+
+  organization "Academic IoT / Network Management Project";
+  description "YANG model for Sonoff energy monitoring devices mirroring the nested JSON structure.";
+
+  revision "2026-01-22" {
+    description "Updated to support nested value/unit objects.";
+  }
+
+  container devices {
+    config false;
+    list device {
+      key "device-id";
+
+      leaf device-id {
+        type string;
+      }
+
+      container sensor {
+        container timestamp {
+          leaf value { type string; }
+          leaf unit { type string; }
+        }
+
+        container voltage {
+          leaf value { type decimal64 { fraction-digits 2; } }
+          leaf unit { type string; }
+        }
+
+        container current {
+          leaf value { type decimal64 { fraction-digits 3; } }
+          leaf unit { type string; }
+        }
+
+        container power_active {
+          leaf value { type decimal64 { fraction-digits 2; } }
+          leaf unit { type string; }
+        }
+
+        container power_apparent {
+          leaf value { type decimal64 { fraction-digits 2; } }
+          leaf unit { type string; }
+        }
+
+        container power_reactive {
+          leaf value { type decimal64 { fraction-digits 2; } }
+          leaf unit { type string; }
+        }
+
+        container power_factor {
+          leaf value { type decimal64 { fraction-digits 3; } }
+          leaf unit { type string; }
+        }
+
+        container energy_today {
+          leaf value { type decimal64 { fraction-digits 3; } }
+          leaf unit { type string; }
+        }
+
+        container energy_yesterday {
+          leaf value { type decimal64 { fraction-digits 3; } }
+          leaf unit { type string; }
+        }
+
+        container energy_total {
+          leaf value { type decimal64 { fraction-digits 3; } }
+          leaf unit { type string; }
+        }
+      }
+    }
+  }
+}

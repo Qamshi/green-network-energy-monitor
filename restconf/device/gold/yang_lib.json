@@ -1,0 +1,28 @@
+{
+"yang-library":{
+  "module-set":[
+    {
+      "name":"all",
+      "module":[
+        {
+          "name":"bird",
+          "revision":"0",
+          "namespace":"",
+          "location":"bird"},
+        {
+          "name":"ietf-yang-library",
+          "revision":"2019-01-04",
+          "namespace":"urn:ietf:params:xml:ns:yang:ietf-yang-library",
+          "location":"ietf-yang-library"}]}]},
+"modules-state":{
+  "module":[
+    {
+      "name":"bird",
+      "revision":"0",
+      "schema":"bird",
+      "namespace":""},
+    {
+      "name":"ietf-yang-library",
+      "revision":"2019-01-04",
+      "schema":"ietf-yang-library",
+      "namespace":"urn:ietf:params:xml:ns:yang:ietf-yang-library"}]}}
